@@ -40,14 +40,15 @@ def run_demo():
     else:
       xr[0] -= dr_slide[0] * vlin * dt
       xr[1] -= dr_slide[1] * vlin * dt
-
+      
     q_actual = IG.denso_position_controller.get_joint_position()
     IG.robot.SetDOFValues(q_actual, IG.manip.GetArmIndices())
-    # Transform wrench to the base_link frame
     We = IG.ft_sensor.get_raw_wrench() - IG.wrench_offset
     bTe = IG.manip.GetEndEffectorTransform()
     bXeF = criros.spalg.force_frame_transform(bTe)
+    # Transform wrench to the base_link frame
     Wb = np.dot(bXeF, We)
+    
     Fb = -Wb[:3]
     Fr = np.array([0., 0., -15])
     Fr[:2] = Fb[:2]
@@ -55,15 +56,18 @@ def run_demo():
     dFe = (Fe - Fe_prev) / dt
     Fe_prev = Fe
     dxf_force = (Kp_force*Fe + Kv_force*dFe) * dt
+    
     xb = IG.manip.GetEndEffectorTransform()[:3, 3]
     xe = xr - xb
     dxe = (xe - xe_prev)
     xe_prev = xe
     dxf_pos = (Kp_pos*xe + Kv_pos*dxe) * dt
+    
     dxf = dxf_force + dxf_pos
     J = IG.manip.CalculateJacobian()
     dqc = np.dot(np.linalg.pinv(J), dxf)
     qc += dqc
+    
     force_data.append(Fb[2])
     time_data.append(rospy.get_time() - initime)
     IG.denso_position_controller.set_joint_positions(qc)
