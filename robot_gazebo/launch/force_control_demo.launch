@@ -23,7 +23,7 @@
   
   <group ns="$(arg namespace)">
     <!-- send robot urdf to param server -->
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find robot_description)/urdf/denso_robotiq_85_gripper.urdf.xacro'" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find denso_description)/urdf/denso_robotiq_85_gripper.urdf.xacro'" />
     <param name="ft_sensor/ft_sensor_controller/publish_rate"   type="double" value="$(arg rate)"/>
     <!-- spawn robot in gazebo -->
     <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.59" output="screen" />
