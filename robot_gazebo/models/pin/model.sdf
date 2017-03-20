@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="pin">
+    <link name="pin">
+      <pose>0 0 0.025 0 0 0</pose>
+      <collision name="pin_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.01</radius>
+            <length>0.05</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="pin_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.01</radius>
+            <length>0.05</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.000011666</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.000011666</iyy>
+          <iyz>0</iyz>
+          <izz>0.0000025</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>
+    

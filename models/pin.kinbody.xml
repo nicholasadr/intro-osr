@@ -1,0 +1,9 @@
+<KinBody name = "pin">
+  <Body name = "pin">
+    <Geom type = "cylinder">
+      <radius>0.01</radius>
+      <height>0.05</height>
+      <diffuseColor>0 0.6 0</diffuseColor>
+    </Geom>
+  </Body>
+</KinBody>

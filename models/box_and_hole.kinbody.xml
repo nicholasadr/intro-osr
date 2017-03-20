@@ -1,0 +1,11 @@
+<KinBody name="box_and_hole">
+  <Body name="box_and_hole" type="static">
+    <Geom type="trimesh" modifiable="false">
+      <diffuseColor>0.5 0 0.5</diffuseColor>
+      <data>box_and_hole.wrl</data>
+      <render>box_and_hole.wrl</render>
+      <translation>0 0 0.05</translation>
+      <rotationmat>-1 0 0 0 -1 0 0 0 1</rotationmat>
+    </Geom>
+  </Body>
+</KinBody>

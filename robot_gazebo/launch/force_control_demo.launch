@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Export env variable so that gazebo finds our models -->
+  <env name="GAZEBO_MODEL_PATH" value="$(find robot_gazebo)/models:$(optenv GAZEBO_MODEL_PATH)" />
+  
+  <!-- launch file parameters -->
+  <arg name="namespace"   default="denso" />
+  <arg name="paused"      default="false"/>
+  <arg name="debug"       default="false"/>
+  <arg name="gui"         default="true"/>
+  <arg name="rate"        default="125" />
+  <arg if=    "$(arg debug)"  name="DEBUG" value="screen"/>
+  <arg unless="$(arg debug)"  name="DEBUG" value="log"/>
+  
+  
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name"  value="$(find robot_gazebo)/worlds/force_control_demo.world"/>
+    <arg name="paused"      value="$(arg paused)"/>
+    <arg name="debug"       value="$(arg debug)"/>
+    <arg name="gui"         value="$(arg gui)"/>
+  </include>
+  
+  <group ns="$(arg namespace)">
+    <!-- send robot urdf to param server -->
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find robot_description)/urdf/denso_robotiq_85_gripper.urdf.xacro'" />
+    <param name="ft_sensor/ft_sensor_controller/publish_rate"   type="double" value="$(arg rate)"/>
+    <!-- spawn robot in gazebo -->
+    <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.59" output="screen" />
+  </group>
+  
+  <!-- robot controller and tf -->
+  <group ns="$(arg namespace)">
+    <rosparam file="$(find robot_gazebo)/config/controllers.yaml" command = "load"/>
+    <node name="robot_controllers" pkg="controller_manager" type = "spawner" output="log"
+      args = "joint_state_controller gazebo_gripper"/>
+    <node name="position_controllers" pkg="controller_manager" type="spawner" output="log" args="j1 j2 j3 j4 j5 j6"/>
+    <node pkg="robot_state_publisher" type="state_publisher" name="state_publisher"> 
+      <param name="tf_prefix"  type="string" value="$(arg namespace)" />
+      <param name="publish_frequency"  type="double" value="50" />
+    </node>  
+  </group>
+  <!-- Fake FT sensor diagnostics  -->
+  <node name="ftsensor_diagnostics" pkg="robot_gazebo" type="ftsensor_diagnostics.py" ns="$(arg namespace)" output="log"> 
+    <param name="publish_rate"  type="double" value="1.0" />
+  </node>
+  <!-- gripper -->
+  <group ns="$(arg namespace)">
+    <node name="gazebo_gripper" pkg="robotiq_gazebo" type="cmodel_controller_emulator.py" output="screen"/>
+    <rosparam file="$(find robotiq_control)/config/cmodel_action_controller.yaml" command="load" />
+    <node name="cmodel_action_controller" pkg="robotiq_control" type="cmodel_action_controller.py" output="screen"/>
+  </group>
+</launch>

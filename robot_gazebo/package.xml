@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>robot_gazebo</name>
+  <version>0.0.1</version>
+  <description>The denso_gazebo package</description>
+  <maintainer email="fsuarez.ruiz@pmail.ntu.edu.sg">Francisco Suarez Ruiz</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>denso_description</build_depend>
+  <build_depend>effort_controllers</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>gazebo_ros_control</build_depend>
+  <build_depend>joint_state_controller</build_depend>
+  <build_depend>joint_trajectory_controller</build_depend>
+  <build_depend>robot_state_publisher</build_depend>
+  
+  <run_depend>denso_description</run_depend>
+  <run_depend>effort_controllers</run_depend>
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>gazebo_ros_control</run_depend>
+  <run_depend>joint_state_controller</run_depend>
+  <run_depend>joint_trajectory_controller</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>robotiq_gazebo</run_depend>
+</package>
