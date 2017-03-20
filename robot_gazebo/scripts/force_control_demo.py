@@ -11,8 +11,6 @@ def run_demo():
   self.wrench_offset
   """
   #slide the pin on the table surface
-  key = raw_input('Press any key to execute the trajectory...')
-  if key == 'q': exit(0)
   vlin = 0.003         #linear velocity
   dr_slide = [0.,1.]   # sliding direction on x-y plane
   dt = 1./ IG.js_rate  # time step  
