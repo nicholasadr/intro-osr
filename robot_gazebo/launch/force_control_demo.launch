@@ -47,7 +47,7 @@
   <!-- gripper -->
   <group ns="$(arg namespace)">
     <node name="gazebo_gripper" pkg="robotiq_gazebo" type="cmodel_controller_emulator.py" output="screen"/>
-    <rosparam file="$(find robotiq_control)/config/cmodel_action_controller.yaml" command="load" />
-    <node name="cmodel_action_controller" pkg="robotiq_control" type="cmodel_action_controller.py" output="screen"/>
+    <rosparam file="$(find robotiq_control)/config/cmodel_action_controller.yaml" command="load" ns="gripper"/>
+    <node name="cmodel_action_controller" pkg="robotiq_control" type="cmodel_action_controller.py" output="screen" ns="gripper"/>
   </group>
 </launch>
