@@ -195,21 +195,10 @@ class Insertion_Gazebo(object):
     self.gripper_controller.wait()
     time.sleep(20) #need to wait for around 20s to create joints between gripper and object, otherwise the object will fall down as the robot arm moves
     
-    #move pin right above the hole
-    found = False
+    #move pin to the position, prepare for moving down until contact
     tr_hole = np.array([0.4,0, 0.25])
-    for yaw in np.linspace(0,2*np.pi,36):
-      Thole = tr.compose_matrix(angles = [0,-np.pi,np.pi/2 + yaw],translate = tr_hole)
-      try:
-        traj = basemanip.MoveToHandPosition(matrices = [Thole] ,seedik = 10, execute = False, outputtrajobj = True)
-        found = True
-        break
-      except orpy.PlanningError:
-        continue
-    if not found:
-      rospy.logwarn('Failed planning for moving the pin to insertion area')
-      embed()
-      return
+    Thole = tr.compose_matrix(angles = [0,-np.pi,np.pi/2],translate = tr_hole)
+    traj = basemanip.MoveToHandPosition(matrices = [Thole] ,seedik = 10, execute = False, outputtrajobj = True)
     self.robot.WaitForController(0)
     traj_spec = traj.GetConfigurationSpecification()
     traj_duration = traj.GetDuration()
