@@ -1,5 +1,4 @@
 '''
-[IN PROGRESS]
 TASK-SPACE IK WITH VELOCITY-SPACE ON SINGLE AXIS"
 by @nicholasadr
 Code is meant for http://osrobotics.org/pages/inverse_kinematics.html exercise
@@ -34,7 +33,7 @@ J = np.zeros((6,6))
 #get current q pose
 q = robot.GetDOFValues()
 
-#get current end-effector goal pose
+#get current end-effector pose
 p_start = manipulator.GetTransform()
 
 #end-effector goal pose
