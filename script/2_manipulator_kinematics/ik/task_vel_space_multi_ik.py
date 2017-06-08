@@ -1,23 +1,23 @@
 '''
-[IN PROGRESS]
-TASK-SPACE IK WITH VELOCITY-SPACE ON MULTIPLE AXIS"
+TASK-SPACE IK WITH VELOCITY-SPACE - TRANSLATION ON MULTIPLE AXIS (CONSTANT ORIENTATION)"
 by @nicholasadr
 Code is meant for http://osrobotics.org/pages/inverse_kinematics.html exercise
-Task-space IK using velocity-space IK for comparison with [Velocity-space IK with OpenRAVE]
+Task-space IK using velocity-space IK for comparison with [Velocity-space IK with OpenRAVE] with translation in multiple axis (constant orientation)
 
 RUN:
-python task_vel_space_multi_ik.py -s {steps to divide the movement into} 
+python task_vel_space_single_ik.py -s {steps to divide the movement} -x {movement distance in x-axis} -y {movement distance in y-axis} -z {movement distance in z-axis}
 '''
 
 import numpy as np
 import openravepy as orpy
 import argparse
-import math
 import copy
-from scipy.linalg import logm,expm
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s","--step",type=int,help="no of steps to break the path into")
+ap.add_argument("-x","--x",type=float,help="distance in x axis")
+ap.add_argument("-y","--y",type=float,help="distance in y axis")
+ap.add_argument("-z","--z",type=float,help="distance in z axis")
 args = vars(ap.parse_args())
 
 env = orpy.Environment()
@@ -25,9 +25,9 @@ env.SetViewer('qtcoin')
 env.Load('../../../envs/grasp.xml')
 robot = env.GetRobots()[0]
 manipulator = robot.SetActiveManipulator('denso_robotiq_85_gripper')
-#grasping_config = [0.1623582, 0.89821769, 1.17244704, 1.64914659, 1.42844832, 2.63613546, 0]
-#robot.SetDOFValues(grasping_config)
-#robot.Grab(env.GetKinBody('thinbox'))
+grasping_config = [0.1623582, 0.89821769, 1.17244704, 1.64914659, 1.42844832, 2.63613546, 0]
+robot.SetDOFValues(grasping_config)
+robot.Grab(env.GetKinBody('thinbox'))
 robotiq_base_origin = robot.GetLinks()[8].GetTransform()[:3,3]
 
 J = np.zeros((6,6))
@@ -35,71 +35,26 @@ J = np.zeros((6,6))
 #get current q pose
 q = robot.GetDOFValues()
 
-#get current end-effector goal pose
-T_start = manipulator.GetTransform()
-R_start = manipulator.GetTransform()[:3,:3]
-x_start = manipulator.GetTransform()[:3,3]
+#get current end-effector pose
+p_start = manipulator.GetTransform()
 
 #end-effector goal pose
-T_end = np.array([[0,1,0,0.5], [0,0,1,0.3], [1,0,0,0.4], [0,0,0,1]])
-R_end = np.array([[0,1,0],[0,0,1],[1,0,0]])
-x_end = np.array([[0.5,0.3,0.4]])
+p_end = copy.deepcopy(p_start)
+p_end[:3,3]+=[args["x"],args["y"],args["z"]]
 
-t = 1.0/args["step"]
-ti = 0
-#============================================================================================
-#Interpolate linear velocity to intermediate linear velocities
-#get v or linear velocity
-x_delta = (x_end-x_start)/args["step"]
+#break down path into smaller paths and find the next linear velocity
+x_delta = ((p_end-p_start)/float(args["step"]))[0,3]
+y_delta = ((p_end-p_start)/float(args["step"]))[1,3]
+z_delta = ((p_end-p_start)/float(args["step"]))[2,3]
+pdot_des = np.array([x_delta, y_delta, z_delta, 0, 0, 0])
 
-#=============================================================================================
-#Interpolate transformation matrix between R_start and R_end in SO(3) to R(t), t[0,1]
-#assuming w(0)=0 and w(1)=0
-
-#finding r1
-r1 = np.matmul(np.transpose(R_start),R_end)  #r1 = log(R_start transpose * R_end)
-eps = 1e-50
-r1[r1==0]=eps   #replace zero with very small value
-r1 = logm(r1)
-
-a2 = copy.deepcopy(r1)
-a2[0][2]*=3
-a2[2][0]*=3
-a3 = copy.deepcopy(r1)
-a3[0][2]*=-2
-a3[2][0]*=-2
-
-#=============================================================================================
-#loop
-for i in range(args["step"]+1):
+#move
+for i in range(args["step"]):
   #get J matrix for current pose
   J[:3,:] = robot.ComputeJacobianTranslation(8, robotiq_base_origin)[:,:6]
   J[3:,:] = robot.ComputeJacobianAxisAngle(8)[:,:6]
-  #J[J==0] = eps
-
-  #get current R
-  pw=np.dot(a3,math.pow(ti,3))+np.dot(a2,math.pow(ti,2))
-  print "pw : ",pw
-  pw2=np.dot(a3,math.pow(ti+t,3))+np.dot(a2,math.pow(ti+t,2))
-  Rt1=np.dot(R_start,expm(pw))
-  print "Rt1 : ",Rt1
-  Rt2=np.dot(R_start,expm(pw2))
-  ti+=t
-
-  #get w
-  Rt1[Rt1==0]=eps
-  Rt2[Rt2==0]=eps
-  w_x=logm(Rt2)-logm(Rt1)
-  print "w_x : ",w_x
-
-  #get w from w_x and
-  #combine v and w to pdot_des
-  pdot_des = np.append(x_delta,[w_x[2][1],w_x[0][2],w_x[1][0]])
-  print "x_delta : ",x_delta
-  print "pdot_des : ",pdot_des
-  print "J : ",J
   qdot = np.linalg.solve(J,pdot_des)
-  print "qdot : ",qdot
   q[:6]+=qdot
+  #robot.SetDOFValues(q[i+1])
   robot.SetDOFValues(q)
   raw_input("Press ENTER for next task-space with velocity-space IK step")
